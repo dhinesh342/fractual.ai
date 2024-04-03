@@ -1,0 +1,19 @@
+.navbar-container{
+    background-color: antiquewhite;
+    height: 7vh;
+    width: 100vw; 
+}
+
+.navbar{
+    padding-top: 10px;
+    display: flex;
+    justify-content: start;
+    list-style-type: none;
+    gap: 25px;
+    cursor: pointer;
+}
+
+#parent{
+    height: 100vh;
+    width: 100vw;
+}
