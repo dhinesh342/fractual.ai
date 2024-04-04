@@ -8,12 +8,15 @@ import { CardActionArea, Grid } from '@mui/material';
 import Navbar from "./Navbar";
 import RepoCard from "./RepoCard";
 import axios from "axios";
+import { Flag } from "@mui/icons-material";
 
 function Home() {
    const [search,setSearch]=useState('');
    const [proxySearch,setProxySearch]=useState('');
    const [data,setData]=useState();
-   const [page,setPage]=useState(0);
+   const [page,setPage]=useState(1);
+   const [observerTriggered,setObserverTriggered]=useState(false);
+
 
    function getSearchContent(e){
     setProxySearch(e.target.value);
@@ -26,9 +29,11 @@ function Home() {
    useEffect(() => {
     const observer = new IntersectionObserver( 
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && observerTriggered) {
           // if (items.length !== 0) setPage((prev) => prev + 1);
           setPage((prev) => prev + 1);
+          console.log("intersection observer")
+          setObserverTriggered(false);
         }
       },
       { threshold: 1 }
@@ -39,7 +44,7 @@ function Home() {
     return () => {
       if (observerTarget.current) observer.unobserve(observerTarget.current);
     };
-  }, [observerTarget]);
+  }, [observerTarget,observerTriggered]);
 
    useEffect(()=>{
     let timer=setInterval(() => {
@@ -54,33 +59,41 @@ function Home() {
       axios.get(`https://api.github.com/search/repositories?q=${search}&page=${page}&per_page=10`).then((e)=>{
         // console.log(e.data.items)
         if(data){
-          setData((prev)=>[...prev,e.data.items])
+          setData((prev)=>[...prev,...e.data.items])
+
         }else{
           setData(e.data.items)
         }
+        setObserverTriggered(true);
       })
       // console.log(data);
       console.log(data);
     }
     
-   },[search])
+   },[search,page])
 
   return (
     <div id="parent">
       <Navbar />
-      <TextField id="outlined-basic" label="Outlined" variant="outlined" onChange={getSearchContent} style={{marginTop:"5px"}} />
+      <TextField id="outlined-basic" label="Search Repositories" variant="outlined" onChange={getSearchContent} style={{marginTop:"5px"}} />
       <Grid spacing={5} container
                 direction="row"
                 justifyContent="center"
                 alignItems="center">
-        {data && data.map((item)=>{
+              
+        {data && data.map((item,index)=>{
           return(
-            <Grid item xs={12} sm={6} md={4} key={item.id} >
+            <Grid item xs={12} sm={6} md={4} key={index} >
               <RepoCard data={item} />
             </Grid>
           ) 
-        })}
-        <div ref={observerTarget} />
+        })
+        
+        }
+        <div ref={observerTarget} ></div>
+        
+        
+      
 
       </Grid>
       
